@@ -1,0 +1,30 @@
+ADVANCED C PROJECT -- TODO LIST
+-------------------------------
+
+
+class #6
+--------
+
+ - implement the List type (create List.c) from profiles listed in List.h
+ - send List.c (initial version) by email to "laroque@u-cergy.fr by the end of class #6
+
+
+between class #6 and class #7
+-----------------------------
+
+ - complete List implementation ; test it against the given ListTest.c file
+ - send List.c (final version) by email before class #7 (bonus to project) ; the sooner the better
+
+
+class #7
+--------
+
+ - find a working copy of List.c if you could not have your own copy work right.
+ - use List type to implement A* algorithm to find the shortest path between two cities in the FRANCE.MAP data
+
+
+1 week after class #7
+---------------------
+
+ - package all your source files *and* the makefile to automate the building of the application, in an archive. THE ARCHIVE MUST NOT CONTAIN ANYTHING ELSE.
+ - send the archive by email before friday 11:59 PM. late emails will induce a penalty of 0.5 pt/day
