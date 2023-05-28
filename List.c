@@ -30,10 +30,10 @@ void delList(List* l) {
 status nthInList(List* l, int n, void* res) {
     Node* tmp;
 
-    if (n > l -> nelts - 1 || n < 0) return ERRINDEX;
+    if (n > l -> nelts || n < 1) return ERRINDEX;
 
     tmp = l -> head;
-    while (n--)
+    while (--n)
     {
         tmp = tmp -> next;
     }
@@ -48,17 +48,17 @@ status addListAt(List* l, int n, void* e){
     int i;
     Node *tmp, *node;
 
-    if (n > l -> nelts || n < 0) return ERRINDEX;
+    if (n > l -> nelts + 1 || n < 1) return ERRINDEX;
 
     node = (Node *) malloc(sizeof(Node));
     if(!node) return ERRALLOC;
 
-    if (n == 0) {
+    if (n == 1) {
         node -> next = l -> head;
         l -> head = node;
     } else {
         tmp = l -> head;
-        for (i = 0; i < n - 1;  i++)
+        for (i = 1; i < n - 1;  i++)
             tmp = tmp -> next;
         
         node -> next = tmp -> next;
@@ -75,19 +75,21 @@ status remFromListAt(List* l, int n, void* res) {
     int i;
     Node* tmp, *tmp1;
 
-    if (n > l -> nelts - 1 || n < 0) return ERRINDEX;
-    if (n == 0) {
+    if (n > l -> nelts || n < 1) return ERRINDEX;
+
+    if (n == 1) {
         tmp = l -> head;
         l -> head = tmp -> next;
     } else {
         tmp1 = l -> head;
-        for (i = 0; i < n - 1; i++)
+        for (i = 1; i < n - 1; i++)
             tmp1 = tmp1 -> next;
         tmp = tmp1 -> next;
         tmp1 -> next = tmp1 -> next -> next;
 
     }
     --l -> nelts;
+    *(void **)res = tmp -> val;
     free(tmp);
 
     return OK;
@@ -167,13 +169,13 @@ status	addList	(List* l, void* e) {
     node = (Node *) malloc(sizeof(Node));
     if (!node) return ERRALLOC;
 
-    if(!l -> head || (*l -> comp)(l -> head -> val, e) > 0 ) {
+    if(!l -> head || (*l -> comp)(l -> head -> val, e) >= 0 ) {
         node -> next = l -> head;
         l -> head = node;
     } 
     else {
         tmp = l -> head;
-        while (tmp -> next && (*l -> comp)(tmp -> val, e) < 0)
+        while (tmp -> next && (*l -> comp)(tmp -> next -> val, e) <= 0)
         {
             tmp = tmp -> next;
         }
