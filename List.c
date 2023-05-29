@@ -58,7 +58,7 @@ status addListAt(List* l, int n, void* e){
         l -> head = node;
     } else {
         tmp = l -> head;
-        for (i = 1; i < n - 1;  i++)
+        while (--n - 1)
             tmp = tmp -> next;
         
         node -> next = tmp -> next;
@@ -82,8 +82,9 @@ status remFromListAt(List* l, int n, void* res) {
         l -> head = tmp -> next;
     } else {
         tmp1 = l -> head;
-        for (i = 1; i < n - 1; i++)
+        while (--n - 1)
             tmp1 = tmp1 -> next;
+        
         tmp = tmp1 -> next;
         tmp1 -> next = tmp1 -> next -> next;
 
