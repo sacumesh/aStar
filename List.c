@@ -3,8 +3,9 @@
 #include <stdio.h>
 
 List *newList(compFun comp, prFun pr) {
-  List *res = (List *)malloc(sizeof(List));
+  List *res;
 
+  res = (List *)malloc(sizeof(List));
   if (!res)
     return 0;
 
@@ -148,7 +149,7 @@ status displayList(List *l) {
     if (tmp)
       printf(", ");
   }
-  puts(" ]");
+  printf(" ]");
 
   return OK;
 }
@@ -231,6 +232,7 @@ List *allThat(List *l, int (*f)(void *)) {
   List *res;
   Node *tmp;
 
+  // if the creation of new list fails return 0
   res = newList(l->comp, l->pr);
   if (!res)
     return 0;
