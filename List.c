@@ -1,6 +1,11 @@
+/* 
+* Name: Konara Mudiyanselage Sachiththa Umesh Bandaranayake
+*/
+
 #include "List.h"
 #include "status.h"
 #include <stdio.h>
+
 
 List *newList(compFun comp, prFun pr) {
   List *res;
@@ -146,6 +151,7 @@ status displayList(List *l) {
     (*l->pr)(tmp->val);
     tmp = tmp->next;
 
+    // sperate each item by a comma
     if (tmp)
       printf(", ");
   }
@@ -157,6 +163,7 @@ status displayList(List *l) {
 void forEach(List *l, void (*f)(void *)) {
   Node *tmp;
 
+  // if f is not found do nothing
   if (!f)
     return;
 
