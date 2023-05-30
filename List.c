@@ -2,245 +2,248 @@
 #include "status.h"
 #include <stdio.h>
 
-List* newList(compFun comp,prFun pr){
-    List * res = (List *) malloc(sizeof(List));
+List *newList(compFun comp, prFun pr) {
+  List *res = (List *)malloc(sizeof(List));
 
-    if(!res) return 0;
+  if (!res)
+    return 0;
 
-    res -> head = 0;
-    res -> nelts = 0;
-    res -> comp = comp;
-    res -> pr = pr;
+  res->head = 0;
+  res->nelts = 0;
+  res->comp = comp;
+  res->pr = pr;
 
-    return res;
-}	
-
-void delList(List* l) {
-    Node * tmp;
-    while (l -> head)
-    {
-        tmp = l -> head;
-        l -> head = l -> head -> next;
-        free(tmp);
-    }
-
-    free(l);
+  return res;
 }
 
-status nthInList(List* l, int n, void* res) {
-    Node* tmp;
+void delList(List *l) {
+  Node *tmp;
 
-    if (n > l -> nelts || n < 1) return ERRINDEX;
+  while (l->head) {
+    tmp = l->head;
+    l->head = l->head->next;
 
-    tmp = l -> head;
-    while (--n)
-    {
-        tmp = tmp -> next;
-    }
-    
-    *(void **)res = tmp -> val;
+    free(tmp);
+  }
 
-    return OK;  
+  free(l);
 }
 
+status nthInList(List *l, int n, void *res) {
+  Node *tmp;
 
-status addListAt(List* l, int n, void* e){
-    int i;
-    Node *tmp, *node;
+  if (n > l->nelts || n < 1)
+    return ERRINDEX;
 
-    if (n > l -> nelts + 1 || n < 1) return ERRINDEX;
+  tmp = l->head;
+  while (--n)
+    tmp = tmp->next;
 
-    node = (Node *) malloc(sizeof(Node));
-    if(!node) return ERRALLOC;
+  *(void **)res = tmp->val;
 
-    if (n == 1) {
-        node -> next = l -> head;
-        l -> head = node;
-    } else {
-        tmp = l -> head;
-        while (--n - 1)
-            tmp = tmp -> next;
-        
-        node -> next = tmp -> next;
-        tmp -> next = node;
-    }
-
-    node -> val = e;
-    ++l -> nelts;
-
-    return OK;
+  return OK;
 }
 
-status remFromListAt(List* l, int n, void* res) {
-    int i;
-    Node* tmp, *tmp1;
+status addListAt(List *l, int n, void *e) {
+  Node *tmp, *node;
 
-    if (n > l -> nelts || n < 1) return ERRINDEX;
+  if (n > l->nelts + 1 || n < 1)
+    return ERRINDEX;
 
-    if (n == 1) {
-        tmp = l -> head;
-        l -> head = tmp -> next;
-    } else {
-        tmp1 = l -> head;
-        while (--n - 1)
-            tmp1 = tmp1 -> next;
-        
-        tmp = tmp1 -> next;
-        tmp1 -> next = tmp1 -> next -> next;
+  node = (Node *)malloc(sizeof(Node));
+  if (!node)
+    return ERRALLOC;
 
+  if (n == 1) {
+    node->next = l->head;
+    l->head = node;
+  } else {
+    tmp = l->head;
+    while (--n - 1)
+      tmp = tmp->next;
+
+    node->next = tmp->next;
+    tmp->next = node;
+  }
+
+  node->val = e;
+  ++l->nelts;
+
+  return OK;
+}
+
+status remFromListAt(List *l, int n, void *res) {
+  Node *tmp, *tmp1;
+
+  if (n > l->nelts || n < 1)
+    return ERRINDEX;
+
+  if (n == 1) {
+    tmp = l->head;
+    l->head = tmp->next;
+  } else {
+    tmp1 = l->head;
+    while (--n - 1)
+      tmp1 = tmp1->next;
+
+    tmp = tmp1->next;
+    tmp1->next = tmp1->next->next;
+  }
+  --l->nelts;
+  *(void **)res = tmp->val;
+  free(tmp);
+
+  return OK;
+}
+
+// removes all occurences of e in the list
+status remFromList(List *l, void *e) {
+  Node *tmp, *tmp1;
+  status res;
+
+  if (!l->comp)
+    return ERRUNABLE;
+  if (!l->head)
+    return ERRABSENT;
+
+  res = ERRABSENT;
+  tmp = l->head;
+  // remove all occuureces of e except if e is the first element
+  while (tmp->next) {
+    if (!(*l->comp)(tmp->next->val, e)) {
+      tmp1 = tmp->next;
+      tmp->next = tmp1->next;
+      --l->nelts;
+      free(tmp1);
+      res = OK;
     }
-    --l -> nelts;
-    *(void **)res = tmp -> val;
+
+    tmp = tmp->next;
+  }
+
+  // remove e if it is the first element
+  if (!(*l->comp)(l->head->val, e)) {
+    tmp = l->head;
+    l->head = tmp->next;
+    --l->nelts;
     free(tmp);
 
-    return OK;
+    res = OK;
+  }
+
+  return res;
 }
 
-status 	remFromList	(List* l, void* e) {
-    Node *tmp, *tmp1;
-    status res;
-    
-    if (!l -> comp) return ERRUNABLE;
-    if (!l -> head) return ERRABSENT;
+status displayList(List *l) {
+  Node *tmp;
+  if (!l->pr)
+    return ERRUNABLE;
+  tmp = l->head;
 
-    res = ERRABSENT;
-    tmp = l -> head;
-    // remove all occuureces of e except in 
-    while (tmp -> next)
-    {
-        if (!(*l -> comp)(tmp -> next -> val, e)) {
-            tmp1 = tmp -> next;
-            tmp -> next = tmp1 -> next;
-            --l -> nelts;
-            free(tmp1);
-            res = OK;
-        }
+  printf("[ ");
+  while (tmp) {
+    (*l->pr)(tmp->val);
+    tmp = tmp->next;
 
-        tmp = tmp -> next;
-    }
+    if (tmp)
+      printf(", ");
+  }
+  puts(" ]");
 
-    // remove head
-    if (!(*l -> comp)(l -> head -> val, e)){
-        tmp = l -> head;
-        l -> head = tmp -> next;
-         --l -> nelts;
-        free(tmp);
-        
-        res = OK;
-    }
-    
-    return res;
+  return OK;
 }
 
-status displayList(List* l) {
-    Node * tmp;
-    if (!l -> pr) return ERRUNABLE;
-    tmp = l -> head;
+void forEach(List *l, void (*f)(void *)) {
+  Node *tmp;
 
-    printf("[ ");
-    while (tmp)
-    {
-        (*l -> pr)(tmp -> val);
-        tmp = tmp -> next;
-        printf(" ");
-    }
-    puts("]");
+  if (!f)
+    return;
 
-    return OK;
+  tmp = l->head;
+  while (tmp) {
+    (*f)(tmp->val);
+    tmp = tmp->next;
+  }
 }
 
-void forEach(List* l,void(*f)(void*)){
-    Node * tmp;
+status addList(List *l, void *e) {
+  Node *node, *tmp;
 
-    if (!f) return;
+  if (!l->comp)
+    return ERRUNABLE;
 
-    tmp = l -> head;
-    while (tmp)
-    {
-        (*f)(tmp -> val);
-        tmp = tmp -> next;
-    }
-}	
+  node = (Node *)malloc(sizeof(Node));
+  if (!node)
+    return ERRALLOC;
 
-status	addList	(List* l, void* e) {
-    Node *node, *tmp;
-
-    if (!l -> comp) return ERRUNABLE;
-
-    node = (Node *) malloc(sizeof(Node));
-    if (!node) return ERRALLOC;
-
-    if(!l -> head || (*l -> comp)(l -> head -> val, e) >= 0 ) {
-        node -> next = l -> head;
-        l -> head = node;
-    } 
-    else {
-        tmp = l -> head;
-        while (tmp -> next && (*l -> comp)(tmp -> next -> val, e) <= 0)
-        {
-            tmp = tmp -> next;
-        }
-    
-        node -> next = tmp -> next;
-        tmp -> next = node;
+  if (!l->head || (*l->comp)(l->head->val, e) >= 0) {
+    node->next = l->head;
+    l->head = node;
+  } else {
+    tmp = l->head;
+    while (tmp->next && (*l->comp)(tmp->next->val, e) <= 0) {
+      tmp = tmp->next;
     }
 
-    node -> val = e; 
-    ++l -> nelts;
+    node->next = tmp->next;
+    tmp->next = node;
+  }
 
-    return OK;
+  node->val = e;
+  ++l->nelts;
+
+  return OK;
 }
 
-Node*	isInList(List* l, void* e)	{
-    Node* tmp;
+Node *isInList(List *l, void *e) {
+  Node *tmp;
 
-    if (!l -> head) return 0;
-
-    if (!(*l -> comp)(l -> head -> val, e)) return (Node *)1;
-     
-    tmp = l -> head;
-    while (tmp -> next)
-    {   
-        if(!(*l -> comp)(tmp -> next -> val, e)) return tmp;
-        tmp = tmp -> next;
-    }
-    
-    return  0;
-}
-
-void* firstThat (List* l, int(*f)(void*)) {
-    Node *tmp;
-    
-    tmp = l -> head;
-    while (tmp)
-    {
-        if ((*f)(tmp -> val)) return tmp -> val;
-        tmp = tmp -> next;
-    }
-    
+  if (!l->head)
     return 0;
+
+  if (!(*l->comp)(l->head->val, e))
+    return (Node *)1;
+
+  tmp = l->head;
+  while (tmp->next) {
+    if (!(*l->comp)(tmp->next->val, e))
+      return tmp;
+    tmp = tmp->next;
+  }
+
+  return 0;
 }
 
-List* allThat (List* l, int(*f)(void*)) {
-    List * res;
-    Node * tmp;
+void *firstThat(List *l, int (*f)(void *)) {
+  Node *tmp;
 
-    res = newList(l -> comp, l ->pr);
-    if (!res) return 0;
+  tmp = l->head;
+  while (tmp) {
+    if ((*f)(tmp->val))
+      return tmp->val;
+    tmp = tmp->next;
+  }
 
-    tmp = l -> head;
-    while (tmp)
-    {
-        if ((*f)(tmp -> val))
-            addList(res, tmp -> val);
-
-        tmp = tmp -> next;
-    }
-
-    return res;
+  return 0;
 }
 
-int	lengthList	(List* l) {
-    return l -> nelts;
+List *allThat(List *l, int (*f)(void *)) {
+  List *res;
+  Node *tmp;
+
+  res = newList(l->comp, l->pr);
+  if (!res)
+    return 0;
+
+  tmp = l->head;
+  while (tmp) {
+    if ((*f)(tmp->val))
+      addList(res, tmp->val);
+
+    tmp = tmp->next;
+  }
+
+  return res;
 }
 
+int lengthList(List *l) { return l->nelts; }

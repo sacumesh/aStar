@@ -1,3 +1,9 @@
+test: test.o List.o
+	gcc -o test test.o List.o
+
+test.o: test.c
+	gcc -c test.c
+
 tList: tList.o List.o status.o
 	gcc -o tList List.o status.o tList.o
 
