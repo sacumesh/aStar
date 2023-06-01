@@ -115,7 +115,7 @@ status remFromList(List *l, void *e) {
   res = ERRABSENT;
   tmp = l->head;
   // remove all occuureces of e except if e is the first element
-  while (tmp->next) {
+  while (tmp && tmp->next) {
     if (!(*l->comp)(tmp->next->val, e)) {
       tmp1 = tmp->next;
       tmp->next = tmp1->next;
@@ -123,10 +123,9 @@ status remFromList(List *l, void *e) {
       free(tmp1);
       res = OK;
     }
-
     tmp = tmp->next;
   }
-
+  
   // remove e if it is the first element
   if (!(*l->comp)(l->head->val, e)) {
     tmp = l->head;
