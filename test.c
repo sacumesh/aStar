@@ -66,90 +66,6 @@ List *split(char *str, char *seperators) {
   return list;
 }
 
-List *test() {
-  FILE *f;
-  size_t sz, len;
-  char *line;
-  List *data;
-  List *neighbours;
-  List *vertices;
-
-  vertices = newList(&compVertex, &prVertex);
-  Vertex *vertex;
-  f = fopen("FRANCE.MAP", "r");
-  while ((len = getline(&line, &sz, f)) != -1) {
-    if (len == 1)
-      continue;
-
-    for (int i = 0; i < len; i++) {
-      if (line[i] == '\n') {
-        line[i] = '\0';
-        break;
-      }
-    }
-    data = split(line, "\t ");
-    if (lengthList(data) == 3) {
-      char *key;
-      Vertex v;
-      nthInList(data, 1, &key);
-      v.key = key;
-      Node *node = isInList(vertices, &v);
-
-      if (node == (Node *)1) {
-        nthInList(vertices, 1, &vertex);
-      } else if (node != 0) {
-        vertex = (Vertex *)node->next->val;
-      } else {
-        vertex = (Vertex *)malloc(sizeof(Vertex));
-        vertex->key = strdup(key);
-        addList(vertices, vertex);
-      }
-
-      //   printf("%s",vertex->key);
-
-      char *strLat;
-      nthInList(data, 2, &strLat);
-      vertex->lat = atoi(strLat);
-
-      char *strLng;
-      nthInList(data, 3, &strLng);
-      vertex->lng = atoi(strLng);
-
-      vertex->neighbours = newList(&compNeighbour, &prNeighbour);
-
-    } else if (lengthList(data) == 2) {
-      char *key;
-      char *strCost;
-      Neighbour *neighbour;
-      Vertex v;
-
-      neighbour = malloc(sizeof(Neighbour));
-
-      nthInList(data, 1, &key);
-
-      nthInList(data, 2, &strCost);
-      neighbour->dist = atoi(strCost);
-      v.key = key;
-
-      Node *node = isInList(vertices, &v);
-      Vertex *tmp;
-      if (node == (Node *)1) {
-        nthInList(vertices, 1, &tmp);
-      } else if (node != 0) {
-        tmp = (Vertex *)node->next->val;
-      } else {
-        tmp = (Vertex *)malloc(sizeof(Vertex));
-        tmp->key = strdup(key);
-        addList(vertices, tmp);
-      }
-      neighbour->vertex = tmp;
-
-      addList(vertex->neighbours, neighbour);
-    }
-  }
-  return vertices;
-}
-
 List * t() {
   FILE *f;
   size_t sz, len;
@@ -161,7 +77,6 @@ List * t() {
   Vertex * v;
   Neighbour * n;
   Node *node;
-
 
   f = fopen("FRANCE.MAP", "r");
   g = newList(&compVertex, &prVertex);
