@@ -13,6 +13,11 @@ static int compString(void *s1, void *s2) {
  *************************************************************
  */
 static void prString(void *s) { printf("%s", (char *)s); }
+
+typedef struct {
+  char *key;
+} Key;
+
 typedef struct Vertex {
   char *key;
   int dist;
@@ -25,11 +30,10 @@ typedef struct Vertex {
 
 typedef struct {
   char *key;
-  Vertex *vertex;
   int dist;
 } Neighbour;
 
-void aStar(List *g, Vertex *start, Vertex *goal);
+void aStar(List *g);
 
 static int compVertex(void *v1, void *v2) {
   return strcmp(((Vertex *)v1)->key, ((Vertex *)v2)->key);
@@ -42,7 +46,7 @@ static void prVertex(void *v) {
 }
 
 static int compNeighbour(void *n1, void *n2) {
-  return strcmp(((Neighbour *)n1)->key, ((Neighbour *)n2)->key);
+  return strcmp(((Key *)n1)->key, ((Key *)n2)->key);
 }
 
 static void prNeighbour(void *n) {
@@ -50,7 +54,7 @@ static void prNeighbour(void *n) {
          ((Neighbour *)n)->dist);
 }
 
-static int compVertexByCombinedCost(void *v1, void *v2) {
+static int compVertexByf(void *v1, void *v2) {
   return ((Vertex *)v1)->dist + ((Vertex *)v1)->h - ((Vertex *)v2)->dist -
          ((Vertex *)v2)->h;
 }
@@ -89,22 +93,10 @@ int main() {
     data = split(line, "\t ");
     if (lengthList(data) == 3) {
       char *key;
-      Vertex v;
+      vertex = (Vertex *)malloc(sizeof(Vertex));
+
       nthInList(data, 1, &key);
-      v.key = key;
-      Node *node = isInList(vertices, &v);
-
-      if (node == (Node *)1) {
-        nthInList(vertices, 1, &vertex);
-      } else if (node != 0) {
-        vertex = (Vertex *)node->next->val;
-      } else {
-        vertex = (Vertex *)malloc(sizeof(Vertex));
-        vertex->key = strdup(key);
-        addList(vertices, vertex);
-      }
-
-      //   printf("%s",vertex->key);
+      vertex->key = strdup(key);
 
       char *strLat;
       nthInList(data, 2, &strLat);
@@ -116,11 +108,11 @@ int main() {
 
       vertex->neighbours = newList(&compNeighbour, &prNeighbour);
 
+      addList(vertices, vertex);
     } else if (lengthList(data) == 2) {
       char *key;
       char *strCost;
       Neighbour *neighbour;
-      Vertex v;
 
       neighbour = malloc(sizeof(Neighbour));
 
@@ -129,47 +121,13 @@ int main() {
 
       nthInList(data, 2, &strCost);
       neighbour->dist = atoi(strCost);
-      v.key = key;
-
-      Node *node = isInList(vertices, &v);
-      Vertex *tmp;
-      if (node == (Node *)1) {
-        // printf("%s", v.key);
-        nthInList(vertices, 1, &tmp);
-      } else if (node != 0) {
-        tmp = (Vertex *)node->next->val;
-      } else {
-        tmp = (Vertex *)malloc(sizeof(Vertex));
-        tmp->key = strdup(key);
-        addList(vertices, tmp);
-        // printf("%s\n", tmp -> key);
-        // displayList(vertices);
-        // puts("");
-      }
-      neighbour->vertex = tmp;
 
       addList(vertex->neighbours, neighbour);
     }
   }
   //   displayList(vertices);
 
-  Vertex abc;
-  Vertex *start;
-  Vertex *goal;
-  Vertex cde;
-
-  abc.key = "Rennes";
-  cde.key = "Lyon";
-
-  Vertex *v;
-
-  Node *node = isInList(vertices, &abc);
-  start = (Vertex *)node->next->val;
-
-  node = isInList(vertices, &cde);
-  goal = (Vertex *)node->next->val;
-
-  aStar(vertices, start, goal);
+  aStar(vertices);
   return 0;
 }
 
@@ -179,24 +137,105 @@ void displayPath(Vertex *v) {
   printf("%s : (%d km)\n", v->key, v->dist);
 }
 
-void aStar(List *g, Vertex *start, Vertex *goal) {
+void aStar(List *g) {
+
+  int inf;
+  List *open;
+  List *closed;
+  Vertex abc;
+  Vertex *start;
+  Vertex *goal;
+  Vertex cde;
+
+  abc.key = "Rennes";
+  cde.key = "Lyon";
+
+  inf = 10000;
+  Vertex *v;
+  open = newList(&compVertexByf, &prVertex);
+  closed = newList(&compVertex, &prVertex);
+
+  Node *node = isInList(g, &abc);
+  start = (Vertex *)node->next->val;
+
+  node = isInList(g, &cde);
+  goal = (Vertex *)node->next->val;
+
+  for (int i = 1; i <= g->nelts; i++) {
+    nthInList(g, i, &v);
+    if (strcmp(v->key, start->key)) {
+      v->dist = inf - i;
+      v->h = abs(goal->lng - v->lng) / 4 + abs(goal->lat - v->lat) / 4;
+    }
+  }
+
+  start->dist = 0;
+  start->h = 0;
+  addList(open, start);
+
+  while (lengthList(open)) {
+    Vertex *current;
+    remFromListAt(open, 1, &current);
+    addList(closed, current);
+
+    if (!strcmp(current->key, goal->key)) {
+      displayPath(current);
+      break;
+    }
+
+    for (int i = 1; i <= current->neighbours->nelts; i++) {
+      Neighbour *n;
+      nthInList(current->neighbours, i, &n);
+      Node *node = isInList(g, n);
+      Vertex *tmp;
+      if (node == (Node *)1) {
+        nthInList(g, 1, &tmp);
+      } else if (node != 0) {
+        tmp = (Vertex *)node->next->val;
+      }
+
+      if (tmp->dist > current->dist + n->dist) {
+        tmp->dist = current->dist + n->dist;
+        tmp->back = current;
+
+        open->comp = &compVertex;
+        if (isInList(open, tmp) != 0) {
+          remFromList(open, tmp);
+        }
+        open->comp = &compVertexByf;
+
+        if (isInList(closed, tmp) != 0)
+          remFromList(closed, tmp);
+
+        addList(open, tmp);
+        displayList(open);
+        puts("");
+      }
+      // displayList(open);
+      // puts("");
+      // displayList(closed);
+    }
+  }
+}
+
+void test(List *g, Vertex *start, Vertex *goal) {
   int inf;
   Neighbour *tmpNeighbour;
-  Vertex *tmpVertex;
+  Vertex *start, *goal, *tmpVertex;
   List *open, *closed;
   Node *tmpNode;
 
   inf = 10000;
   for (int i = 1; i <= lengthList(g); i++) {
     nthInList(g, i, &tmpVertex);
-    if (compVertex(tmpVertex, start)) {
+    if (strcmp(tmpVertex->key, start->key)) {
       tmpVertex->dist = inf - i;
       tmpVertex->h = abs(goal->lng - tmpVertex->lng) / 4 +
                      abs(goal->lat - tmpVertex->lat) / 4;
     }
   }
 
-  open = newList(&compVertexByCombinedCost, &prVertex);
+  open = newList(&compVertexByf, &prVertex);
   closed = newList(&compVertex, &prVertex);
 
   start->dist = 0;
@@ -215,21 +254,29 @@ void aStar(List *g, Vertex *start, Vertex *goal) {
 
     for (int i = 1; i <= lengthList(current->neighbours); i++) {
       nthInList(current->neighbours, i, &tmpNeighbour);
-      Vertex *v = tmpNeighbour->vertex;
+      tmpNode = isInList(g, tmpNeighbour);
 
-      if (v->dist > current->dist + tmpNeighbour->dist) {
-        v->dist = current->dist + tmpNeighbour->dist;
-        v->back = current;
+      if (tmpNode == (Node *)1) {
+        nthInList(g, 1, &tmpVertex);
+      } else if (tmpNode != 0) {
+        tmpVertex = (Vertex *)tmpNode->next->val;
+      }
+
+      if (tmpVertex->dist > current->dist + tmpNeighbour->dist) {
+        tmpVertex->dist = current->dist + tmpNeighbour->dist;
+        tmpVertex->back = current;
 
         open->comp = &compVertex;
-        if (isInList(open, v))
-          remFromList(open, v);
-        open->comp = &compVertexByCombinedCost;
+        if (isInList(open, tmpVertex) != 0) {
+          remFromList(open, tmpVertex);
+        }
+        open->comp = &compVertexByf;
 
-        if (isInList(closed, v))
-          remFromList(closed, v);
+        if (isInList(closed, tmpVertex) != 0)
+          remFromList(closed, tmpVertex);
 
-        addList(open, v);
+        addList(open, tmpVertex);
+        displayList(open);
       }
     }
   }
