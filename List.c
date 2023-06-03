@@ -249,11 +249,11 @@ List *allThat(List *l, int (*f)(void *)) {
   tmp = l->head;
   while (tmp) {
     // add the element that satisfy the predicate to end if error return 0
-    if ((*f)(tmp->val) && addListAt(res, l->nelts+1, tmp->val) == ERRALLOC){
+    if ((*f)(tmp->val) && addListAt(res, l->nelts + 1, tmp->val) == ERRALLOC) {
       delList(l);
       return 0;
     }
-     
+
     tmp = tmp->next;
   }
 
