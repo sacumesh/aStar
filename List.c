@@ -1,11 +1,10 @@
-/* 
-* Name: Konara Mudiyanselage Sachiththa Umesh Bandaranayake
-*/
+/*
+ * Name: Konara Mudiyanselage Sachiththa Umesh Bandaranayake
+ */
 
 #include "List.h"
 #include "status.h"
 #include <stdio.h>
-
 
 List *newList(compFun comp, prFun pr) {
   List *res;
@@ -123,9 +122,10 @@ status remFromList(List *l, void *e) {
       free(tmp1);
       res = OK;
     }
+
     tmp = tmp->next;
   }
-  
+
   // remove e if it is the first element
   if (!(*l->comp)(l->head->val, e)) {
     tmp = l->head;
@@ -145,16 +145,19 @@ status displayList(List *l) {
     return ERRUNABLE;
   tmp = l->head;
 
-  printf("[ ");
+  printf("[");
   while (tmp) {
+    printf(" ");
     (*l->pr)(tmp->val);
     tmp = tmp->next;
 
     // sperate each item by a comma
     if (tmp)
-      printf(", ");
+      printf(",");
+    else
+      printf(" ");
   }
-  printf(" ]");
+  printf("]");
 
   return OK;
 }
@@ -245,13 +248,18 @@ List *allThat(List *l, int (*f)(void *)) {
 
   tmp = l->head;
   while (tmp) {
-    if ((*f)(tmp->val))
-      addList(res, tmp->val);
-
+    // add the element that satisfy the predicate to end if error return 0
+    if ((*f)(tmp->val) && addListAt(res, l->nelts+1, tmp->val) == ERRALLOC){
+      delList(l);
+      return 0;
+    }
+     
     tmp = tmp->next;
   }
 
   return res;
 }
 
-int lengthList(List *l) { return l->nelts; }
+int lengthList(List *l) {
+  return l->nelts;
+}
