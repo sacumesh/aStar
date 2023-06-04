@@ -45,7 +45,7 @@ static int compVertexByCombinedCost(void *v1, void *v2) {
          ((Vertex *)v2)->h;
 }
 
-List *t(FILE *file) {
+List *createGraphFromFile(FILE *file) {
   char* line;
   size_t len;
   ssize_t read;
@@ -172,18 +172,6 @@ void processLine(char* line) {
     printf("Processing line: %s", line);
 }
 
-void readLinesFromFile(FILE* file) {
-    char* line;
-    size_t len;
-    ssize_t read;
-
-    while ((read = getline(&line, &len, file)) != -1) {
-        processLine(line);
-    }
-
-    // No need to free(line) here
-}
-
 int main(int nWords, char *words[]) {
   Vertex *start;
   Vertex *goal;
@@ -193,36 +181,27 @@ int main(int nWords, char *words[]) {
   char goalStr[20];
 
   FILE* file = fopen("FRANCE.MAP", "r");
-    if (file == NULL) {
-        printf("Failed to open the file.\n");
-        return 1;
-    }
+  if (!file) return 2;
 
-    t(file);
+  g = createGraphFromFile(file);
 
-    // fclose(file);
+  if (nWords>=3){
+    strcpy(startStr, words[1]);
+    strcpy(goalStr, words[2]);
+  } else {
+    printf("Enter start? ");
+    scanf("%s", startStr);
+    printf("Enter goal? ");
+    scanf("%s", goalStr);
+  }
 
-  // f = fopen("FRANCE.MAP", "r");
-  // g = t(&f);
-  // fclose(f);
+  start = searchVertex(g, startStr);
+  if (!start)
+    return 1;
 
-  // if (nWords>=3){
-  //   strcpy(startStr, words[1]);
-  //   strcpy(goalStr, words[2]);
-  // } else {
-  //   printf("Enter start? ");
-  //   scanf("%s", startStr);
-  //   printf("Enter goal? ");
-  //   scanf("%s", goalStr);
-  // }
+  goal = searchVertex(g, goalStr);
+  if (!goal)
+    return 1;
 
-  // start = searchVertex(g, startStr);
-  // if (!start)
-  //   return 1;
-
-  // goal = searchVertex(g, goalStr);
-  // if (!goal)
-  //   return 1;
-
-  // aStar(g, start, goal);
+  aStar(g, start, goal);
 }
