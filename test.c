@@ -167,11 +167,6 @@ Vertex *searchVertex(List *g, char *key) {
   return res;
 }
 
-void processLine(char* line) {
-    // Process the line as needed
-    printf("Processing line: %s", line);
-}
-
 int main(int nWords, char *words[]) {
   Vertex *start;
   Vertex *goal;
@@ -185,7 +180,7 @@ int main(int nWords, char *words[]) {
 
   g = createGraphFromFile(file);
 
-  if (nWords>=3){
+  if (nWords>=3) {
     strcpy(startStr, words[1]);
     strcpy(goalStr, words[2]);
   } else {

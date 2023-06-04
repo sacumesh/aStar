@@ -1,8 +1,8 @@
+#include "Graph.h"
+#include "List.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "List.h"
-#include "Graph.h"
 
 static int compVertex(void *v1, void *v2) {
   return strcmp(((Vertex *)v1)->key, ((Vertex *)v2)->key);
@@ -34,49 +34,52 @@ static void displayPath(Vertex *v) {
   printf("%s : (%d km)\n", v->key, v->dist);
 }
 
-Graph * newGraph() {
-    Graph * res;
-    res = newList(&compVertex, &prVertex);
-    if (!res) return 0;
-    return res;
+Graph *newGraph() {
+  Graph *res;
+  res = newList(&compVertex, &prVertex);
+  if (!res)
+    return 0;
+  return res;
 }
 
-Vertex * newVertex(char * key) {
-    Vertex * res;
-    Neighbours * ns;
-    res = (Vertex *)malloc(sizeof(Vertex));
-    if (!res) return 0;
-    ns = newList(&compNeighbour, &prNeighbour);
-    res -> neighbours = ns;
-    res -> key = key;
-    return res;
+Vertex *newVertex(char *key) {
+  Vertex *res;
+  Neighbours *ns;
+  res = (Vertex *)malloc(sizeof(Vertex));
+  if (!res)
+    return 0;
+  ns = newList(&compNeighbour, &prNeighbour);
+  res->neighbours = ns;
+  res->key = key;
+  return res;
 }
 
-Neighbour * newNeighbour() {
-    Neighbour * res;
-    res = (Neighbour *)malloc(sizeof(Neighbour)); 
-    if(!res) return 0;
-    return res;
+Neighbour *newNeighbour() {
+  Neighbour *res;
+  res = (Neighbour *)malloc(sizeof(Neighbour));
+  if (!res)
+    return 0;
+  return res;
 }
 
 void addVertex(Graph *g, Vertex *v) {
-    addList(g, v);
+  addList(g, v);
 }
 
 void addNeighbour(Vertex *v, Neighbour *n) {
-     addList(v -> neighbours, n);
+  addList(v->neighbours, n);
 }
 
-void delGraph(Graph * g) {
-    int i;
-    Vertex * v;
-    for (i = 1; i < g -> nelts; i++) {
-        nthInList(g, i, &v);
-        delList(v -> neighbours);
-        free(v -> key);
-    }
+void delGraph(Graph *g) {
+  int i;
+  Vertex *v;
+  for (i = 1; i < g->nelts; i++) {
+    nthInList(g, i, &v);
+    delList(v->neighbours);
+    free(v->key);
+  }
 
-    delList(g);
+  delList(g);
 }
 
 Vertex *searchVertex(List *g, char *key) {
@@ -151,5 +154,5 @@ void aStar(Graph *g, Vertex *start, Vertex *goal) {
 
   delList(open);
   delList(closed);
+  printf("test");
 }
-

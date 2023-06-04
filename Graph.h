@@ -20,19 +20,17 @@ typedef struct {
 
 typedef List Graph;
 
-typedef List Neighbours;
-
 Vertex *searchVertex(List *g, char *key);
 
-Graph *newGraph(); 
+Graph *newGraph();
 
 Neighbour *newNeighbour();
 
-Vertex *newVertex(char * key);
+Vertex *newVertex(char *key);
 
-void addNeighbour(Vertex *v, Neighbour * n);
+void addNeighbour(Vertex *v, Neighbour *n);
 
-void addVertex(Graph * g, Vertex * v);
+void addVertex(Graph *g, Vertex *v);
 
 void delGraph(Graph *g);
 
