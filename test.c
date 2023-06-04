@@ -2,19 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-static int compString(void *s1, void *s2) {
-  return strcmp((char *)s1, (char *)s2);
-}
-
-/*************************************************************
- * Function to display an element of the list
- * @param s the string to display
- *************************************************************
- */
-static void prString(void *s) {
-  printf("%s", (char *)s);
-}
 typedef struct Vertex {
   char *key;
   int dist;
@@ -31,7 +18,8 @@ typedef struct {
 } Neighbour;
 
 void aStar(List *g, Vertex *start, Vertex *goal);
-Vertex * searchVertex(List * g, char *key) ;
+Vertex *searchVertex(List *g, char *key);
+void processLine(char* line);
 
 static int compVertex(void *v1, void *v2) {
   return strcmp(((Vertex *)v1)->key, ((Vertex *)v2)->key);
@@ -57,33 +45,32 @@ static int compVertexByCombinedCost(void *v1, void *v2) {
          ((Vertex *)v2)->h;
 }
 
-List * t() {
-  FILE *f;
-  size_t sz, len;
-  char *line;
+List *t(FILE *file) {
+  char* line;
+  size_t len;
+  ssize_t read;
   char value1[100];
   int value2;
   int value3;
   List *g;
-  Vertex * v1, *v2;
-  Neighbour * n;
-
-  f = fopen("FRANCE.MAP", "r");
+  Vertex *v1, *v2;
+  Neighbour *n;
+  
   g = newList(&compVertex, &prVertex);
-  while ((len = getline(&line, &sz, f)) != -1) {
+  while ((read = getline(&line, &len, file)) != -1) {
     int entriesRead = sscanf(line, "%s %d %d", value1, &value2, &value3);
-      if (entriesRead == 3) {
-        v1 = searchVertex(g, value1);
+    if (entriesRead == 3) {
+      v1 = searchVertex(g, value1);
       if (!v1) {
         v1 = (Vertex *)malloc(sizeof(Vertex));
-        v1 -> key = strdup(value1);
+        v1->key = strdup(value1);
         addList(g, v1);
       }
-        v1 -> lat = value2;
-        v1 -> lng = value3;
-        v1 -> neighbours = newList(&compNeighbour, &prNeighbour);
-      } else if(entriesRead == 2) {
-        v2 = searchVertex(g, value1);
+      v1->lat = value2;
+      v1->lng = value3;
+      v1->neighbours = newList(&compNeighbour, &prNeighbour);
+    } else if (entriesRead == 2) {
+      v2 = searchVertex(g, value1);
 
       if (!v2) {
         v2 = (Vertex *)malloc(sizeof(Vertex));
@@ -91,16 +78,14 @@ List * t() {
         addList(g, v2);
       }
 
-        n = (Neighbour *)malloc(sizeof(Neighbour));
-        n -> dist = value2;
-        n -> vertex = v2; 
-        addList(v1 -> neighbours, n);
-      }
+      n = (Neighbour *)malloc(sizeof(Neighbour));
+      n->dist = value2;
+      n->vertex = v2;
+      addList(v1->neighbours, n);
+    }
   }
-  fclose(f);
   return g;
 }
-
 
 void displayPath(Vertex *v) {
   if (v->back)
@@ -164,34 +149,80 @@ void aStar(List *g, Vertex *start, Vertex *goal) {
   delList(closed);
 }
 
-Vertex * searchVertex(List * g, char *key) {
-  Vertex * res;
+Vertex *searchVertex(List *g, char *key) {
+  Vertex *res;
   Vertex v;
-  Node * node;
+  Node *node;
 
   v.key = key;
   node = isInList(g, &v);
-  if (!node) return 0;
+  if (!node)
+    return 0;
 
   if (node == (Node *)1) {
-        nthInList(g, 1, &res);
+    nthInList(g, 1, &res);
   } else {
-        res = (Vertex *)node->next->val;
+    res = (Vertex *)node->next->val;
   }
   return res;
 }
 
-int main(int nWords, char * words[]) {
+void processLine(char* line) {
+    // Process the line as needed
+    printf("Processing line: %s", line);
+}
+
+void readLinesFromFile(FILE* file) {
+    char* line;
+    size_t len;
+    ssize_t read;
+
+    while ((read = getline(&line, &len, file)) != -1) {
+        processLine(line);
+    }
+
+    // No need to free(line) here
+}
+
+int main(int nWords, char *words[]) {
   Vertex *start;
   Vertex *goal;
-  List * g;
+  List *g;
+  FILE *f;
+  char startStr[20];
+  char goalStr[20];
 
-  g = t();
-  start = searchVertex(g, "Paris");
-  if(!start) return 3;
+  FILE* file = fopen("FRANCE.MAP", "r");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return 1;
+    }
 
-  goal = searchVertex(g, "Lyon");
-  if(!goal) return 3;
+    t(file);
 
-  aStar(g, start, goal);
+    // fclose(file);
+
+  // f = fopen("FRANCE.MAP", "r");
+  // g = t(&f);
+  // fclose(f);
+
+  // if (nWords>=3){
+  //   strcpy(startStr, words[1]);
+  //   strcpy(goalStr, words[2]);
+  // } else {
+  //   printf("Enter start? ");
+  //   scanf("%s", startStr);
+  //   printf("Enter goal? ");
+  //   scanf("%s", goalStr);
+  // }
+
+  // start = searchVertex(g, startStr);
+  // if (!start)
+  //   return 1;
+
+  // goal = searchVertex(g, goalStr);
+  // if (!goal)
+  //   return 1;
+
+  // aStar(g, start, goal);
 }
