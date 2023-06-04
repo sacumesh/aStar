@@ -31,6 +31,7 @@ typedef struct {
 } Neighbour;
 
 void aStar(List *g, Vertex *start, Vertex *goal);
+Vertex * searchVertex(List * g, char *key) ;
 
 static int compVertex(void *v1, void *v2) {
   return strcmp(((Vertex *)v1)->key, ((Vertex *)v2)->key);
@@ -56,99 +57,50 @@ static int compVertexByCombinedCost(void *v1, void *v2) {
          ((Vertex *)v2)->h;
 }
 
-List *split(char *str, char *seperators) {
-  List *list = newList(&compString, &prString);
-  char *token = strtok(str, seperators);
-  while (token != 0) {
-    addListAt(list, list->nelts + 1, token);
-    token = strtok(0, seperators);
-  }
-  return list;
-}
-
 List * t() {
   FILE *f;
   size_t sz, len;
   char *line;
-  char num1[100];
-  int num2;
-  int num3;
+  char value1[100];
+  int value2;
+  int value3;
   List *g;
-  Vertex * v;
+  Vertex * v1, *v2;
   Neighbour * n;
-  Node *node;
 
   f = fopen("FRANCE.MAP", "r");
   g = newList(&compVertex, &prVertex);
   while ((len = getline(&line, &sz, f)) != -1) {
-    int entriesRead = sscanf(line, "%s %d %d", num1, &num2, &num3);
+    int entriesRead = sscanf(line, "%s %d %d", value1, &value2, &value3);
       if (entriesRead == 3) {
-        Vertex vKey;
-        vKey.key = num1;
-        Node *node = isInList(g, &vKey);
-
-      if (node == (Node *)1) {
-        nthInList(g, 1, &v);
-      } else if (node != 0) {
-        v = (Vertex *)node->next->val;
-      } else {
-        v = (Vertex *)malloc(sizeof(Vertex));
-        v -> key = strdup(num1);
-        addList(g, v);
+        v1 = searchVertex(g, value1);
+      if (!v1) {
+        v1 = (Vertex *)malloc(sizeof(Vertex));
+        v1 -> key = strdup(value1);
+        addList(g, v1);
       }
-
-        v -> lat = num2;
-        v -> lng = num3;
-        v -> neighbours = newList(&compNeighbour, &prNeighbour);
+        v1 -> lat = value2;
+        v1 -> lng = value3;
+        v1 -> neighbours = newList(&compNeighbour, &prNeighbour);
       } else if(entriesRead == 2) {
-        Vertex * tmp;
-        Vertex tmpV;
-        tmpV.key = num1;
+        v2 = searchVertex(g, value1);
 
-        Node *node = isInList(g, &tmpV);
-
-        if (node == (Node *)1) {
-        nthInList(g, 1, &tmp);
-      } else if (node != 0) {
-        tmp = (Vertex *)node->next->val;
-      } else {
-        tmp = (Vertex *)malloc(sizeof(Vertex));
-        tmp->key = strdup(num1);
-        addList(g, tmp);
+      if (!v2) {
+        v2 = (Vertex *)malloc(sizeof(Vertex));
+        v2->key = strdup(value1);
+        addList(g, v2);
       }
 
         n = (Neighbour *)malloc(sizeof(Neighbour));
-        n -> dist = num2;
-        n -> vertex = tmp; 
-        addList(v -> neighbours, n);
+        n -> dist = value2;
+        n -> vertex = v2; 
+        addList(v1 -> neighbours, n);
       }
   }
   fclose(f);
   return g;
 }
 
-int main() {
-  List *g = t();
-
-  Vertex abc;
-  Vertex *start;
-  Vertex *goal;
-  Vertex cde;
-
-  abc.key = "Rennes";
-  cde.key = "Lyon";
-
-  Vertex *v;
-
-  Node *node = isInList(g, &abc);
-  start = (Vertex *)node->next->val;
-
-  node = isInList(g, &cde);
-  goal = (Vertex *)node->next->val;
-
-  aStar(g, start, goal);
-  return 0;
-}
 
 void displayPath(Vertex *v) {
   if (v->back)
@@ -210,4 +162,36 @@ void aStar(List *g, Vertex *start, Vertex *goal) {
 
   delList(open);
   delList(closed);
+}
+
+Vertex * searchVertex(List * g, char *key) {
+  Vertex * res;
+  Vertex v;
+  Node * node;
+
+  v.key = key;
+  node = isInList(g, &v);
+  if (!node) return 0;
+
+  if (node == (Node *)1) {
+        nthInList(g, 1, &res);
+  } else {
+        res = (Vertex *)node->next->val;
+  }
+  return res;
+}
+
+int main(int nWords, char * words[]) {
+  Vertex *start;
+  Vertex *goal;
+  List * g;
+
+  g = t();
+  start = searchVertex(g, "Paris");
+  if(!start) return 3;
+
+  goal = searchVertex(g, "Lyon");
+  if(!goal) return 3;
+
+  aStar(g, start, goal);
 }
