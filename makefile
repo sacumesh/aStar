@@ -1,18 +1,30 @@
-test: test.o List.o
-	gcc -o test test.o List.o
+ALL = aStar
+CC = gcc
+CFLAGS = -Wall -Wextra
 
-test.o: test.c
-	gcc -c test.c
+all: $(ALL)
 
-tList: tList.o List.o status.o
-	gcc -o tList List.o status.o tList.o
+aStar: aStarProject.o Map.o List.o status.o
+	$(CC) -o $@ aStarProject.o Map.o List.o status.o
 
-tList.o: tList.c
-	gcc -c tList.c
+clean:
+	rm -rf *.*o aStar
+	rm -rf doc
 
-List.o: List.c
-	gcc -c List.c
+distribute: clean
+	tar zcvf dist.tgz *
 
-status.o: status.c
-	gcc -c status.o
+aStarProject.o: aStarProject.c Map.h List.h status.h
+	$(CC) $(CFLAGS) -c aStarProject.c
 
+Map.o: Map.c Map.h List.h status.h
+	$(CC) $(CFLAGS) -c Map.c
+
+List.o: List.c List.h status.h
+	$(CC) $(CFLAGS) -c List.c
+
+status.o: status.c status.h
+	$(CC) $(CFLAGS) -c status.c
+
+doc:
+	doxygen Doxyfile
