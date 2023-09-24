@@ -269,6 +269,9 @@ status aStar(Map *m, City *start, City *goal) {
 
             /* assign the city of the obtained neighbour to 'c' */
             c = n->city;
+            
+            /* compare the city by city name in the open list */
+            open->comp = &cmpCity;
 
             /*  continue to the next successor if the city 'c' is already in the open or closed list
              *  and if the distance from the start to city 'c' is less the sum of the distance from the
@@ -287,7 +290,6 @@ status aStar(Map *m, City *start, City *goal) {
                 remFromList(closed, c);
 
             /* if the city 'c' is already in the 'remove' list, remove it */
-            open->comp = &cmpCity;
             if (isInList(open, c))
                 remFromList(open, c);
 
