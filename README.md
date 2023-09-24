@@ -3,7 +3,6 @@
 ## Authors
 
 - Konara Mudiyansealge Sachiththa Umesh Bandaranayake
-- Sanjana Raparthi
 
 
 ## Building and Running aStar
